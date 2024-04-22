@@ -7,6 +7,9 @@ G="\e[32m"
 Y="\e[33m"
 N="\e[0m"
 
+echo "Please Enter DB Password:"
+read -s mysql_root_password
+
 VALIDATE(){
     if [ $1 -ne 0 ]
     then
@@ -33,5 +36,16 @@ VALIDATE $? "Enabling MySQL Server"
 systemctl start mysqld &>>$LOGFILE
 VALIDATE $? "Starting MySQL Server"
 
-mysql_secure_installation --set-root-pass ExpenseApp@1 &>>$LOGFILE
-VALIDATE $? "Setting up root password"
+#mysql_secure_installation --set-root-pass ExpenseApp@1 &>>$LOGFILE
+#VALIDATE $? "Setting up root password"
+
+#Below code  will be useful for idempotent nature
+
+mysql -h <MYSQL-SERVER-IPADDRESS> -uroot -p${mysql_root_password}"Show Databases;" &>>LOGFILE
+if [ $? -ne 0 ]
+then
+    echo mysql_secure_installation --set-root-pass ${mysql_root_password} &>>$LOGFILE
+    VALIDATE $? "MySql Root Password Setup"
+else
+    echo -e "MySQL Root password is already setup...$Y SKIPPING $N"
+fi
